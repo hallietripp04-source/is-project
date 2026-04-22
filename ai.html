@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Mini Wordle</title>
+<style>
+  body {
+    font-family: Arial, sans-serif;
+    text-align: center;
+    background: #121213;
+    color: white;
+  }
+
+  h1 {
+    margin-top: 20px;
+  }
+
+  #board {
+    display: grid;
+    grid-template-columns: repeat(5, 60px);
+    gap: 8px;
+    justify-content: center;
+    margin: 20px auto;
+  }
+
+  .tile {
+    width: 60px;
+    height: 60px;
+    border: 2px solid #3a3a3c;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 28px;
+    text-transform: uppercase;
+    font-weight: bold;
+  }
+
+  .correct {
+    background-color: #538d4e;
+    border-color: #538d4e;
+  }
+
+  .present {
+    background-color: #b59f3b;
+    border-color: #b59f3b;
+  }
+
+  .absent {
+    background-color: #3a3a3c;
+    border-color: #3a3a3c;
+  }
+
+  #message {
+    margin-top: 15px;
+    font-size: 18px;
+  }
+
+  #playAgain {
+    margin-top: 15px;
+    padding: 10px 20px;
+    font-size: 16px;
+    background: #538d4e;
+    border: none;
+    color: white;
+    cursor: pointer;
+    border-radius: 5px;
+    display: none;
+  }
+
+  #playAgain:hover {
+    background: #6aaa64;
+  }
+</style>
+</head>
+<body>
+
+    <p>  <a href="fromScratch.html" style="color:#6aaa64; text-decoration:none;">    ← Back to Scratch Page  </a></p>
+
+<h1>Mini Wordle</h1>
+<div id="board"></div>
+<div id="message"></div>
+<button id="playAgain">Play Again</button>
+
+<script>
+  const words = [
+    // original fruits
+    "apple","grape","peach","melon","berry",
+
+    // general words
+    "table","chair","plant","light","sound","brick","stone","water","flame",
+    "earth","metal","glass","clock","paper","pencil","brush","paint","frame",
+    "house","couch","shelf","floor","ceiling","window","door","knock","smile",
+    "laugh","happy","angry","quick","slow","dream","sleep","awake","think",
+    "learn","teach","write","read","speak","watch","build","break","carry",
+    "throw","catch","drive","ride","flyer","train","truck","plane","beach",
+    "river","mount","forest","desert","ocean","storm","cloud","rainy","sunny",
+    "windy","chill","frost","shine","glow","spark","flash","sound","noise",
+    "music","piano","guitar","drums","voice","dance","party","crowd","event",
+    "score","level","start","finish","round","match","skill","power","speed",
+    "focus","aimed","track","field","court","medal","prize","award","title"
+  ];
+
+  const board = document.getElementById("board");
+  const message = document.getElementById("message");
+  const playAgainBtn = document.getElementById("playAgain");
+
+  const rows = 6;
+  const cols = 5;
+
+  let answer;
+  let currentRow;
+  let currentCol;
+  let guesses;
+
+  function initGame() {
+    answer = words[Math.floor(Math.random() * words.length)];
+    currentRow = 0;
+    currentCol = 0;
+    guesses = Array.from({ length: rows }, () => Array(cols).fill(""));
+
+    board.innerHTML = "";
+    message.textContent = "";
+    playAgainBtn.style.display = "none";
+
+    for (let i = 0; i < rows * cols; i++) {
+      const tile = document.createElement("div");
+      tile.classList.add("tile");
+      board.appendChild(tile);
+    }
+
+    document.addEventListener("keydown", handleKey);
+  }
+
+  function updateBoard() {
+    const tiles = document.querySelectorAll(".tile");
+    tiles.forEach((tile, index) => {
+      const r = Math.floor(index / cols);
+      const c = index % cols;
+      tile.textContent = guesses[r][c];
+    });
+  }
+
+  function endGame(msg) {
+    message.textContent = msg;
+    document.removeEventListener("keydown", handleKey);
+    playAgainBtn.style.display = "inline-block";
+  }
+
+  function checkGuess() {
+    const guess = guesses[currentRow].join("");
+    if (guess.length < 5) return;
+
+    const tiles = document.querySelectorAll(".tile");
+
+    for (let i = 0; i < cols; i++) {
+      const tileIndex = currentRow * cols + i;
+      const letter = guess[i];
+
+      if (letter === answer[i]) {
+        tiles[tileIndex].classList.add("correct");
+      } else if (answer.includes(letter)) {
+        tiles[tileIndex].classList.add("present");
+      } else {
+        tiles[tileIndex].classList.add("absent");
+      }
+    }
+
+    if (guess === answer) {
+      endGame("🎉 You got it!");
+      return;
+    }
+
+    currentRow++;
+    currentCol = 0;
+
+    if (currentRow === rows) {
+      endGame("Game over! Word was: " + answer);
+    }
+  }
+
+  function handleKey(e) {
+    if (e.key === "Backspace") {
+      if (currentCol > 0) {
+        currentCol--;
+        guesses[currentRow][currentCol] = "";
+      }
+    } else if (e.key === "Enter") {
+      checkGuess();
+    } else if (/^[a-zA-Z]$/.test(e.key)) {
+      if (currentCol < cols) {
+        guesses[currentRow][currentCol] = e.key.toLowerCase();
+        currentCol++;
+      }
+    }
+
+    updateBoard();
+  }
+
+  playAgainBtn.addEventListener("click", initGame);
+
+  initGame();
+</script>
+
+</body>
+</html>
